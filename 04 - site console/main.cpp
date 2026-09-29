@@ -30,7 +30,45 @@ int main() {
     double tariff[2][3] = {{5.00, 1.5, 0.8}, {2.0, 1.25, 0.75}};
 
     // Part B: the menu loop, then Parts C to F inside it
-    // your code here
+    char choice;
+    bool state = false;
+    do {
+    cout << "" << endl 
+    << "=== Site Console ===\n" << "R Site Report\n" 
+    << "F Fault Detail\n" << "C Clear a Fault\n" 
+    << "V Energy Value\n" << "Q Quit\n" << endl << "Choice: ";
+    cin >> choice;
+    switch (choice) {
+        case 'R':
+        case 'r':
+        cout << "Choice R";
+        break;
 
+        case 'F':
+        case 'f':
+        cout << "Choice F"; 
+        break;
+
+        case 'C':
+        case 'c':
+        cout << "Choice C"; 
+        break;
+
+        case 'V':
+        case 'v':
+        cout << "Choice V"; 
+        break;
+
+        case 'Q':
+        case 'q':
+        cout << "Bye"; 
+        break;
+
+        default: 
+        cout << "Unknown Option";
+        state = true;
+    }
+    }
+    while (state);
     return 0;
 }
