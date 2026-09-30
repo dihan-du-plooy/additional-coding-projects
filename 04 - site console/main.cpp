@@ -1,8 +1,5 @@
 // 04 — site console
-// Brief: see BRIEF.md in this folder. Build it part by part (A to F).
-//
-// Build in VS Code with Ctrl+Shift+B, or from a terminal:
-//     g++ -std=c++17 -Wall -Wextra -o main.exe main.cpp
+// Brief: see BRIEF.md in this folder.
 
 #include <iostream>
 #include <string>
@@ -39,10 +36,50 @@ int main() {
     << "V Energy Value\n" << "Q Quit\n" << endl << "Choice: ";
     cin >> choice;
     switch (choice) {
-        case 'R':
+        //Part C - Individual Inverter Report:
         case 'r':
-        cout << "Choice R";
-        break;
+        case 'R': {
+            for (int i = 0; i < 3; i++) {
+                cout << site[i].name << " "
+                    << site[i].kwh[0] + site[i].kwh[1] + site[i].kwh[2] + site[i].kwh[3] + site[i].kwh[4] + site[i].kwh[5] << " " << "kWh "
+                    << "status: " << "0x" << hex << site[i].status << dec;     //<< hex to switch output from dec to hex and << dec to switch back
+                if (site[i].status == 0)
+                    cout << " OK." << endl;
+                else
+                    cout << " FAULT." << endl;
+            };
+
+            //Part C - Report Summary:
+            double siteTotal = 0.0;
+            int inverterCount = sizeof(site)/sizeof(site[0]);       //assigned to int variable as it will be compared to int variable i
+
+            //Site Total kWh
+            for (int i = 0; i < inverterCount ; i++) { 
+                int kwhHours = sizeof(site[i].kwh)/sizeof(site[i].kwh[0]);      //dynamic counting using sizeof() operator
+                for (int j = 0; j < kwhHours; j++) {
+                    siteTotal += site[i].kwh[j];
+                }
+            }
+            cout << "Site Total: " << siteTotal << "kwh." << endl;
+
+            //Peak Hour
+            double hrSlot1 = 0.0, hrSlot2 = 0.0, hrSlot3 = 0.0;
+            for (int i = 0; i < inverterCount; i++) {
+                int kwhHours = sizeof(site[i].kwh)/sizeof(site[i].kwh[0]);
+                for (int j = 0; j < kwhHours; j += 2) {
+                    if (j == 0) hrSlot1 += site[i].kwh[j] + site[i].kwh[j+1];
+                    if (j == 2) hrSlot2 += site[i].kwh[j] + site[i].kwh[j+1];
+                    if (j == 4) hrSlot3 += site[i].kwh[j] + site[i].kwh[j+1];
+                }
+            }  
+            if (hrSlot1 > hrSlot2 && hrSlot1 > hrSlot3)
+                cout << "Peak Slot: 06:00-08:00 " << hrSlot1 << "kWh. ";
+            else if (hrSlot2 > hrSlot1 || hrSlot3)
+                cout << "Peak Slot: 08:00-10:00 " << hrSlot2 << "kWh. ";
+            else
+                cout << "Peak Slot: 10:00-12:00" << hrSlot3 << "kWh. ";
+            break;
+        }
 
         case 'F':
         case 'f':
