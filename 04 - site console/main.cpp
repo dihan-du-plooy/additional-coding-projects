@@ -30,7 +30,7 @@ int main() {
 
     // Part B: the menu loop, then Parts C to F inside it
     char choice;
-    bool loopState = false;
+    bool loopState = true;
     do {
     cout << "" << endl 
     << "=== Site Console ===\n" << "R Site Report\n" 
@@ -80,8 +80,8 @@ int main() {
                 cout << "Peak Slot: 08:00-10:00 " << hrSlot2 << "kWh. ";
             else
                 cout << "Peak Slot: 10:00-12:00" << hrSlot3 << "kWh. ";
-            continue;
         }
+        break;
         
         //Part D - Individual Inverter Faut Report
         case 'f':
@@ -101,37 +101,73 @@ int main() {
                 for (int i = 0; (int)pow(2, i) <= 8; i++) {
                     if((site[invChoice - 1].status & (int)pow(2, i)) == ((int)pow(2, i)))
                         switch((int)pow(2, i)) {
-                            case 1: cout << "bit " << 1 << " Grid Fault." << endl; break;
-                            case 2: cout << "bit " << 2 << " Over-Temp." << endl; break;
-                            case 4: cout << "bit " << 3 << " Coms lost." << endl; break;
-                            case 8: cout << "bit " << 4 << " Isolation Fault." << endl; break;
+                            case 1: cout << "bit " << 0 << " Grid Fault." << endl; break;
+                            case 2: cout << "bit " << 1 << " Over-Temp." << endl; break;
+                            case 4: cout << "bit " << 2 << " Coms lost." << endl; break;
+                            case 8: cout << "bit " << 3 << " Isolation Fault." << endl; break;
                         }
                 }
            }
             else
                 cout << "No active faults: ";
-            continue;
         }
-
+        break;
+        //Part E - Individual inverter fault selection and clearing
         case 'C':
-        case 'c':
-        cout << "Choice C";
-        continue;
-
+        case 'c': {
+            //Selection and validation phase
+            cout << "Which inverter would you like to clear a fault from: ";
+            int invChoice;
+            cin >> invChoice;
+            while (invChoice > 3 || invChoice < 1) {
+                cin.ignore(numeric_limits<streamsize>::max(),'\n');     //clear entire input stream incase of unbounded reply
+                cout << "No such inverter. There's only " << sizeof(site)/sizeof(site[0]) << " inverters. Please pick again: ";
+                cin >> invChoice;
+           }
+           cout << "Which fault bit would you like to clear: ";
+           int faultBit;
+           cin >> faultBit;
+           while (faultBit > 3 || faultBit < 0) {
+                cout << "Invalid input. There's no such fault. Try again: ";
+                cin.ignore(numeric_limits<streamsize>::max(),'\n');
+                cin >> faultBit;
+           }
+            //Fault finding and clearing phase
+            switch (faultBit) {
+                case 0: site[invChoice - 1].status = site[invChoice - 1].status ^ 1; 
+                        cout << "Cleared bit " << 0 << " on " << site[invChoice - 1].name 
+                        << ". " << "Status 0x" << hex << site[invChoice - 1].status << dec;
+                        break;
+                case 1: site[invChoice - 1].status = site[invChoice - 1].status ^ 2; 
+                        cout << "Cleared bit " << 1 << " on " << site[invChoice - 1].name 
+                        << ". " << "Status 0x" << hex << site[invChoice - 1].status << dec;
+                        break;
+                case 2: site[invChoice - 1].status = site[invChoice - 1].status ^ 4; 
+                        cout << "Cleared bit " << 2 << " on " << site[invChoice - 1].name 
+                        << ". " << "Status 0x" << hex << site[invChoice - 1].status << dec;
+                        break;
+                case 3: site[invChoice - 1].status = site[invChoice - 1].status ^ 8; 
+                        cout << "Cleared bit " << 3 << " on " << site[invChoice - 1].name 
+                        << ". " << "Status 0x" << hex << site[invChoice - 1].status << dec;
+                        break;
+            }
+        }
+        break;
+        
         case 'V':
         case 'v':
         cout << "Choice V"; 
-        continue;
+        break;
 
         case 'Q':
         case 'q':
         cout << "Bye";
-        loopState = true; 
+        loopState = false; 
         break;
 
         default: 
-        cout << "Unknown Option";
-        loopState = true;
+        cout << "Unknown Option. Pick again: " << endl;
+        break;
     }
     }
     while (loopState);
