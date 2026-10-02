@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <limits>
+#include <cmath>
 
 using namespace std;
 
@@ -28,7 +30,7 @@ int main() {
 
     // Part B: the menu loop, then Parts C to F inside it
     char choice;
-    bool state = false;
+    bool loopState = false;
     do {
     cout << "" << endl 
     << "=== Site Console ===\n" << "R Site Report\n" 
@@ -80,15 +82,40 @@ int main() {
                 cout << "Peak Slot: 10:00-12:00" << hrSlot3 << "kWh. ";
             break;
         }
-
-        case 'F':
+        
+        //Part D - Individual Inverter Faut Report
         case 'f':
-        cout << "Choice F"; 
+        case 'F': {
+            //Inverter selection and validation
+            cout << "Which inverter would you like to check: ";
+            int invChoice;
+            cin >> invChoice;
+            while (invChoice > 3 || invChoice < 1) {
+                cin.ignore(numeric_limits<streamsize>::max(),'\n');     //clear entire input stream incase of unbounded reply
+                cout << "No such inverter. There's only " << sizeof(site)/sizeof(site[0]) << " inverters. Please pick again: ";
+                cin >> invChoice;
+           }
+           //Identify fault codes
+           if (site[invChoice -1].status != 0) {
+                cout << site[invChoice - 1].name << " faults: " << site[invChoice - 1].status << endl;
+                for (int i = 0; (int)pow(2, i) <= 8; i++) {
+                    if((site[invChoice - 1].status & (int)pow(2, i)) == ((int)pow(2, i)))
+                        switch((int)pow(2, i)) {
+                            case 1: cout << "bit " << 1 << " Grid Fault." << endl; break;
+                            case 2: cout << "bit " << 2 << " Over-Temp." << endl; break;
+                            case 4: cout << "bit " << 3 << " Coms lost." << endl; break;
+                            case 8: cout << "bit " << 4 << " Isolation Fault." << endl; break;
+                        }
+                }
+           }
+            else
+                cout << "No active faults: ";
+        }
         break;
 
         case 'C':
         case 'c':
-        cout << "Choice C"; 
+        cout << "Choice C";
         break;
 
         case 'V':
@@ -98,14 +125,15 @@ int main() {
 
         case 'Q':
         case 'q':
-        cout << "Bye"; 
+        cout << "Bye";
+        loopState = true; 
         break;
 
         default: 
         cout << "Unknown Option";
-        state = true;
+        loopState = true;
     }
     }
-    while (state);
+    while (loopState);
     return 0;
 }
