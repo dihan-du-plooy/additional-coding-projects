@@ -80,7 +80,7 @@ int main() {
                 cout << "Peak Slot: 08:00-10:00 " << hrSlot2 << "kWh. ";
             else
                 cout << "Peak Slot: 10:00-12:00" << hrSlot3 << "kWh. ";
-            break;
+            continue;
         }
         
         //Part D - Individual Inverter Faut Report
@@ -110,18 +110,18 @@ int main() {
            }
             else
                 cout << "No active faults: ";
+            continue;
         }
-        break;
 
         case 'C':
         case 'c':
         cout << "Choice C";
-        break;
+        continue;
 
         case 'V':
         case 'v':
         cout << "Choice V"; 
-        break;
+        continue;
 
         case 'Q':
         case 'q':
