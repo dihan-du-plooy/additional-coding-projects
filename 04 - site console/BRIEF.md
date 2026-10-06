@@ -4,7 +4,7 @@ scope: "Module 2 capstone — lessons 2.0–2.9, plus all of Module 1"
 level: 3
 features: [struct, "array field in a struct", "array of structs", "structure initializer", "zero extension", "2D array", "array initializer", "do loop", "for loop", "nested loop", switch, case, default, break, continue, "else-if", "logical operators", "bitwise operators", bitmask, "bit shifting", unsigned, double, bool, char, cin, hex, dec, string, cout]
 set: 2026-09-24
-status: open        # open | submitted | marked
+status: marked      # open | submitted | marked
 ---
 
 # 04 — Site console
