@@ -9,8 +9,7 @@
 
 using namespace std;
 
-// ---- Given: do not change these two structures ----------------------------
-
+//------------------------------------------------------------STRUCT DEC--------------------------------------------------------------------------
 struct TIME {
     int hour, minute;
 };
@@ -37,26 +36,22 @@ struct BOARD {
     TICKET *tickets;
 };
 
-// ---- Prototypes: every function's declaration goes here, above main ----
+//------------------------------------------------------------FUNC DEC--------------------------------------------------------------------------
 void printRule(char symbol = '-', int width = 50);      //prints widht copies of a symbol, then a newline
 inline int toMinutes(TIME t);       //minutes since midnight: 07:05 -> 425
 void printTime(int minutes);        //Prints a number of minutes as HH:MM, both parts always two digits. No newline. Used for clock times and for durations.
 void printTime(TIME t);     //outputs the same as printTime but with TIME struct input
-int minutesOpen(TICKET t, TIME now);        //gives the minutes from the time the ticket was raised to the current time 
+int minutesOpen(TICKET t, TIME now);        //gives the minutes from the time the ticket was raised to the current time
+char flagLetter(int bit);       //responds with P,S or N based on flag bit input with ? for fale safe
+bool hasFlag(TICKET t, int bit);        //returns true if a ticket has a flag
+void printTicket(TICKET t, TIME now);       //for the report, print convention = P1  T103  07:50  age 01:40  [P--]  Delta Cold Store
+void addTicket(BOARD &board, TICKET t);     //Grows the board by one and puts t at the end.
+void tallyPriorities(BOARD board, int *tally);      //tally points at an int array of 3. Fill it with how many tickets are P1, P2, P3.
+void printBoard(BOARD &board, TIME now);        //Prints the whole board block. In Part E it sorts the board first.
 
 
+//-----------------------------------------------------------------------------DISPATCHER---------------------------------------------------------------------------------
 int main() {
-    TIME t = {7, 5};
-    printTime(t);   cout << endl;
-    printTime(605); cout << endl;
-    printTime(0);   cout << endl;
-    cout << toMinutes(t) << endl;
-    TICKET test = {1, 2, {6, 40}, 0, "Test"};
-    TIME now = {9, 30};
-    cout << minutesOpen(test, now) << endl;
-    printRule('=');
-    printRule();
-    return 0;
 
     // Starting values from the brief — the script your program runs, top to bottom.
     COMMAND script[27] = {
@@ -91,13 +86,23 @@ int main() {
     };
     int scriptLength = 27;
 
-    // Part B: declare the board here, starting empty (once struct BOARD exists above).
+    //----------------------------------------------------------------------------PART B----------------------------------------------------------------------------------
+    BOARD board = {0, NULL};
+
 
     for (int i = 0; i < scriptLength; i++) {
         COMMAND cmd = script[i];
-
-        // your code here — one switch on cmd.action
-
+        if (cmd.action == 'O') {
+            TICKET currentTicket = {cmd.id, cmd.value, cmd.at, 0, cmd.site};      //Contemplate ticket global existance
+            addTicket(board, currentTicket);
+            cout << "Opened T" << currentTicket.id << " P" << currentTicket.priority << " " << currentTicket.site << endl;
+        }
+        else {
+            switch (cmd.action) {
+                 case 'B': printBoard(board, cmd.at); break;
+                 default: cout << "Unknown command " << "'" << cmd.action << "'" << endl; break;      //default behaviour: print any command not yet compensated for as unknown
+            }
+        }
     }
 
     // Part D: the end-of-script line, then free whatever is still on the board.
@@ -105,8 +110,8 @@ int main() {
     return 0;
 }
 
-// ---- Definitions: every function's body goes here, below main ----
-void printRule(char symbol, int width) {        //notice how there's no default values in the definition when it's already in the declaration
+//------------------------------------------------------------------------------FUNC DEFINITIONS---------------------------------------------------------------------------
+void printRule(char symbol, int width) {        //keep note of how there's no default values in the definition when it's already in the declaration
     for (int i = 0; i < width; i++)
         cout << symbol;
     cout << endl;
@@ -132,14 +137,78 @@ void printTime(int minutes) {
     return;
 }
 
-void printTime(TIME t) {
+void printTime(TIME t) {        //good use of function overloading, same functions accomodating for 2 data types.
     printTime(toMinutes(t));
     return;
 }
 
 int minutesOpen(TICKET t, TIME now) {
-    int raisedTime = toMinutes(t.raised);
-    int currentTime = toMinutes(now);
-    return currentTime - raisedTime;
+    int raisedTime = toMinutes(t.raised);    //TIME t.raised to min
+    int currentTime = toMinutes(now);       //TIME now to min
+    return currentTime - raisedTime;        //return min difference
+}
+
+char flagLetter(int bit) {              //might need to change switch values to the bit values and not their weight
+    switch (bit) {
+        case 1: return 'P';     //after a return you don't need a break
+        case 2: return 'S';
+        case 4: return 'N';
+        default: return '?';
+    }   
+}
+
+bool hasFlag(TICKET t, int bit) {
+    if(t.flags)
+        return true;
+    return false;
+}
+
+void printTicket(TICKET t, TIME now) {      //print convention = P1  T103  07:50  age 01:40  [P--]  Delta Cold Store
+    cout << "P" << t.priority << "  T" << t.id << "  ";
+    printTime(t.raised);        //you can't add a function that's already printing something to cout.
+    cout << "  age ";
+    printTime(minutesOpen(t, now)); cout << " ";
+    switch (t.flags) {
+        case 1: cout << "[P--]"; break;
+        case 2: cout << "[-S-]"; break;
+        case 4: cout << "[--N]"; break;
+        default: cout << "[---]";
+    }
+    cout << " " << t.site << endl;
+}
+
+void addTicket(BOARD &board, TICKET t) {
+    TICKET *tempTickArr = new TICKET[board.count + 1];      //creates block in memory one size bigger than board tickets array (locally)
+    for (int i = 0; i < board.count; i++)       //copies board tickets over to block
+        tempTickArr[i] = board.tickets[i];      
+    tempTickArr[board.count] = t;       //adds new ticket to block
+    delete[] board.tickets;     //deletes board tickets memory
+    board.tickets = tempTickArr;        //assign board tickets to new tempTickArray
+    board.count++;      //adds ticket count to board's tracker
+}
+
+void tallyPriorities(BOARD board, int *tally) {
+    for (int i = 0; i < board.count; i++) {
+        switch (board.tickets[i].priority) {
+            case 1: tally[0] += 1; break;       //a pointer is dereferenced with []
+            case 2: tally[1] += 1; break;
+            case 3: tally[2] += 1; break; 
+        }  
+    }
+}
+
+void printBoard(BOARD &board, TIME now) {
+    int tally[3] = {0, 0, 0};       //array for tallyPriorities
+    tallyPriorities(board, tally);      //populating tally array
+    //----------------------Board Print---------------------------
+    cout << endl;
+    cout << "Board at "; printTime(now); cout << endl;      //because printTime doesn't return anything you can't put it straight in the cout stream
+    printRule('=');
+    for (int i = 0; i < board.count; i++) {
+        printTicket(board.tickets[i], now);  
+    }
+    printRule();
+    cout << "Open: " << board.count << "  P1: " << tally[0] << "  P2: " << tally[1] << "  P3: " << tally[2] << endl;
+    cout << endl;
 }
 
